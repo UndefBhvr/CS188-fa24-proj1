@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -20,6 +20,7 @@ Pacman agents (in searchAgents.py).
 import util
 from game import Directions
 from typing import List
+
 
 class SearchProblem:
     """
@@ -64,8 +65,6 @@ class SearchProblem:
         util.raiseNotDefined()
 
 
-
-
 def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     """
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
@@ -73,7 +72,25 @@ def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     """
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
+
+def DFSHelper(
+    state, stack: util.Stack, problem: SearchProblem, visited: set
+) -> List[Directions]:
+    if problem.isGoalState(state):
+        return stack.list
+    if state in visited:
+        return []
+    visited.add(state)
+    for next_state, act, _ in problem.getSuccessors(state):
+        stack.push(act)
+        res = DFSHelper(next_state, stack, problem, visited)
+        if res != []:
+            return res
+        stack.pop()
+    return []
+
 
 def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """
@@ -90,17 +107,57 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    stack = util.Stack()
+    start = problem.getStartState()
+    visited = set()
+    return DFSHelper(start, stack, problem, visited)
+    # util.raiseNotDefined()
+
 
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.Queue()
+    start = problem.getStartState()
+    visited = set()
+    queue.push((start, []))
+    while not queue.isEmpty():
+        state, acts = queue.pop()
+        if state in visited:
+            continue
+        visited.add(state)
+        if problem.isGoalState(state):
+            return acts
+        for next_state, act, _ in problem.getSuccessors(state):
+            if next_state in visited:
+                continue
+            queue.push((next_state, acts + [act]))
+    return []
+    # util.raiseNotDefined()
+
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Using Dijkstra Algorithm in infinite maps
+    pq = util.PriorityQueue()
+    start = problem.getStartState()
+    pq.push((start, []), 0)
+    visited = {}
+    while not pq.isEmpty():
+        state, acts = pq.pop()
+        cost = problem.getCostOfActions(acts)
+        if state in visited and visited[state] <= cost:
+            continue
+        visited[state] = cost
+        if problem.isGoalState(state):
+            return acts
+        for next_state, act, cost in problem.getSuccessors(state):
+            new_acts = acts + [act]
+            pq.push((next_state, new_acts), problem.getCostOfActions(new_acts))
+    return []
+    # util.raiseNotDefined()
+
 
 def nullHeuristic(state, problem=None) -> float:
     """
@@ -109,10 +166,30 @@ def nullHeuristic(state, problem=None) -> float:
     """
     return 0
 
+
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    pq = util.PriorityQueue()
+    start = problem.getStartState()
+    pq.push((start, []), 0)
+    visited = {}
+    while not pq.isEmpty():
+        state, acts = pq.pop()
+        cost = problem.getCostOfActions(acts)
+        if state in visited and visited[state] <= cost:
+            continue
+        visited[state] = cost
+        if problem.isGoalState(state):
+            return acts
+        for next_state, act, cost in problem.getSuccessors(state):
+            new_acts = acts + [act]
+            cost1 = problem.getCostOfActions(new_acts)
+            cost2 = heuristic(next_state, problem)
+            pq.push((next_state, new_acts), cost1 + cost2)
+    return []
+    # util.raiseNotDefined()
+
 
 # Abbreviations
 bfs = breadthFirstSearch
