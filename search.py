@@ -75,6 +75,20 @@ def tinyMazeSearch(problem: SearchProblem) -> List[Directions]:
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+def DFSHelper(state,stack:util.Stack,problem:SearchProblem,visited:set) -> List[Directions]:
+    if problem.isGoalState(state):
+        return stack.list
+    if state in visited:
+        return []
+    visited.add(state)
+    for next_state,act,_ in problem.getSuccessors(state):
+        stack.push(act)
+        res = DFSHelper(next_state,stack,problem,visited)
+        if res!=[]:
+            return res
+        stack.pop()
+    return []
+
 def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """
     Search the deepest nodes in the search tree first.
@@ -90,11 +104,33 @@ def depthFirstSearch(problem: SearchProblem) -> List[Directions]:
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    stack = util.Stack()
+    start = problem.getStartState()
+    visited = set()
+    return DFSHelper(start,stack,problem,visited)
+    # util.raiseNotDefined()
 
 def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    queue = util.Queue()
+    start = problem.getStartState()
+    visited = set()
+    queue.push((start,Directions.STOP,None))
+    while not queue.isEmpty():
+        rec = queue.pop()
+        state, last_act, last = rec
+        visited.add(state)
+        if problem.isGoalState(state):
+            res = []
+            while last_act != Directions.STOP:
+                res = last_act + res
+                _, last_act, last = last
+            return res
+        for next_state,act,_ in problem.getSuccessors(state):
+            if next_state in visited:
+                continue
+            queue.push(next_state,act,rec)
     util.raiseNotDefined()
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
