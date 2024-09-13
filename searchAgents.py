@@ -431,12 +431,12 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    (x,y),mask=state
-    res=0 # Default to trivial solution
+    (x, y), mask = state
+    res = 0  # Default to trivial solution
     for i in range(4):
-        if ((1<<i) & mask) != 0:
+        if ((1 << i) & mask) != 0:
             continue
-        res=max(res,util.manhattanDistance((x,y),problem.corners[i]))
+        res = max(res, util.manhattanDistance((x, y), problem.corners[i]))
     return res
 
 
@@ -539,9 +539,44 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    foodLs = foodGrid.asList()
+
+    if not foodLs:
+        return 0
+
+    nearest = min(util.manhattanDistance(position, food) for food in foodLs)
+
+    def prim(points):
+        n = len(points)
+        if n == 0:
+            return 0
+        visited = set()
+        dis = [0] + [float("inf") for _ in range(n - 1)]
+        res = 0
+        for _ in range(n):
+            min_cost = float("inf")
+            u = None
+            for v in range(n):
+                if v not in visited and dis[v] < min_cost:
+                    min_cost = dis[v]
+                    u = v
+            if u == None:
+                break
+            res += min_cost
+            visited.add(u)
+            for v in range(n):
+                if (
+                    v not in visited
+                    and util.manhattanDistance(points[u], points[v]) < dis[v]
+                ):
+                    dis[v] = util.manhattanDistance(points[u], points[v])
+        return res
+
+    mst = prim(foodLs)
+
+    return nearest + mst
 
 
 class ClosestDotSearchAgent(SearchAgent):
