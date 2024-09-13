@@ -122,15 +122,15 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
         state, last_act, last = rec
         visited.add(state)
         if problem.isGoalState(state):
-            res = []
+            res = [last_act]
             while last_act != Directions.STOP:
-                res = last_act + res
+                res = [last_act] + res
                 _, last_act, last = last
             return res
         for next_state,act,_ in problem.getSuccessors(state):
             if next_state in visited:
                 continue
-            queue.push(next_state,act,rec)
+            queue.push((next_state,act,rec))
     util.raiseNotDefined()
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
